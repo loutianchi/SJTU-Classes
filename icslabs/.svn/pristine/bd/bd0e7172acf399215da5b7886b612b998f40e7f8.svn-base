@@ -1,0 +1,4 @@
+ps r | sort -k 5 -f
+ls -l /etc | grep "\.conf" | sort -k 5 -n | head -n 5
+echo "echo Hello World!" > echo.sh | sh echo.sh
+

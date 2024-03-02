@@ -1,0 +1,4 @@
+./hex2raw < exploit.txt > exploit-raw.txt
+gcc -c try.s
+objdump -d try.o > try.d
+
