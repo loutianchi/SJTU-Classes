@@ -54,27 +54,36 @@ int main(int argc, const char *argv[])
 	auto seed = std::atoll(argv[2]);
 	double p = std::atof(argv[3]);
 
-	// generate input data
-	auto input = gen_input(element_count, seed);
+	int64_t tot = 0;
+	for (seed = 1; seed <= 10; seed++) {
 
-	// construct kvstore with input data
-	auto kvstore = skiplist::skiplist_type(p);
-	for (auto &[key, value] : input){
-		// print the generated data
-		// printf("%d %s \n",key,value.c_str());
-		kvstore.put(key, std::move(value));
+		// generate input data
+		auto input = gen_input(element_count, seed);
+
+		// construct kvstore with input data
+		auto kvstore = skiplist::skiplist_type(p);
+		for (auto &[key, value] : input){
+			// print the generated data
+			// printf("%d %s \n",key,value.c_str());
+			kvstore.put(key, std::move(value));
+		}
+		
+		// random query
+		int64_t query_distance_sum = 0;
+		std::uniform_int_distribution<> rand_idx(0, element_count - 1);
+		for (int i = 0; i < QUERY_TIMES; ++i)
+		{
+			int x = rand_idx(rng);
+			auto key = input[x].first;
+			query_distance_sum += kvstore.query_distance(key);
+			assert(kvstore.get(key) == input[x].second);
+		}
+
+		printf("(element#=%d, p=%lf) average query distance = %lf\n",
+			element_count, p, double(query_distance_sum) / QUERY_TIMES);
+		tot += query_distance_sum;
 	}
 	
-	// random query
-	int64_t query_distance_sum = 0;
-	std::uniform_int_distribution<> rand_idx(0, element_count - 1);
-	for (int i = 0; i < QUERY_TIMES; ++i)
-	{
-		int x = rand_idx(rng);
-		int key = input[x].first;
-		query_distance_sum += kvstore.query_distance(key);
-	}
-
-	printf("(element#=%d, p=%lf) average query distance = %lf\n",
-		element_count, p, double(query_distance_sum) / QUERY_TIMES);
+	printf("(element#=%d, p=%lf) average ten query distance = %lf\n",
+		element_count, p, double(tot) / QUERY_TIMES / 10);
 }
