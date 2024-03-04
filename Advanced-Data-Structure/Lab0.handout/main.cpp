@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         utils::loadCodingTable(utils::getFileName(input_file, ".sin.huffidx"), codingTable);
         utils::output(utils::getFileName(input_file, ".sin.huffzip"), utils::compress(codingTable, text));
     }
-/*
+
     // Compression encoding by MultiChar
     {
         std::map<std::string, std::string> codingTable;
@@ -39,6 +39,6 @@ int main(int argc, char *argv[])
         utils::loadCodingTable(utils::getFileName(input_file, ".mul.huffidx"), codingTable);
         utils::output(utils::getFileName(input_file, ".mul.huffzip"), utils::compress(codingTable, text));
     }
-*/
+
     return 0;
 }

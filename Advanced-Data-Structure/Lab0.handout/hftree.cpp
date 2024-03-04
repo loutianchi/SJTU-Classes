@@ -8,22 +8,44 @@ const int MULTI_CHAR_NUMBER = 3;
 hfTree::hfTree(const std::string &text, const Option op)
 {
     std::map <std::string, int> mapBuilding;
+    std::priority_queue<hfNode *, std::vector<hfNode *>, multiSelect> q0;
+    hfNode *newNode, *chd1, *chd2;
+
     mapBuilding.clear();
     if (op == Option::MultiChar) {
         for (int i=0; i < text.length() - 1; i++) 
             mapBuilding[text.substr(i,2)]++;
         for (std::map<std::string, int>::iterator it = mapBuilding.begin(); it != mapBuilding.end(); ++it) {
-            //TODO
+            newNode = new hfNode(it->second, it->first);
+            q0.push(newNode);
+            if (q0.size() > 3) {
+                newNode = q0.top();
+                q0.pop();
+                delete newNode;
+            }
+        }
+        mapBuilding.clear();
+        while (!q0.empty()) {
+            newNode = q0.top();q0.pop();
+            mapBuilding[newNode->text] = 0;
         }
     }
 
+    std::string subs;
     for (int i=0; i < text.length(); i++) {
-        //TODO
-        mapBuilding[text.substr(i,1)]++;
+        if (i < text.length() - 1) {
+            subs = text.substr(i, 2);
+            if (mapBuilding.find(subs) != mapBuilding.end()) {
+                i++;
+                mapBuilding[subs]++;
+                continue;
+            }
+        }
+        subs = text.substr(i,1);
+        mapBuilding[subs]++;
     }
     
     std::priority_queue<hfNode *, std::vector<hfNode *>, smallFirst> q;
-    hfNode *newNode, *chd1, *chd2;
     for (std::map<std::string, int>::iterator it = mapBuilding.begin(); it != mapBuilding.end(); ++it) {
         newNode = new hfNode(it->second, it->first);
         q.push(newNode);

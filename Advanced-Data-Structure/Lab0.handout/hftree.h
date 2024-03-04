@@ -45,13 +45,19 @@ private:
             }
         }
     };
+
     struct smallFirst
     {
         bool operator()(const hfNode *l, const hfNode *r) const {
             return !((*l) < (*r));
         }
     };
-    
+    struct multiSelect
+    {
+        bool operator()(const hfNode *l, const hfNode *r) const {
+            return (l->cnt > r->cnt || (l->cnt == r->cnt && l->smallNode->text < r->smallNode->text));
+        }
+    };
 
     hfNode *root;
     std::map<std::string, std::string> codingTable;
