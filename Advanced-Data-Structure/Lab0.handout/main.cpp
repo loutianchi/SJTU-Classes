@@ -5,7 +5,6 @@
 
 int main(int argc, char *argv[])
 {
-
     if (argc != 2)
     {
         std::cout << "[usage]: ./main [input_file_path]" << std::endl;
@@ -17,6 +16,7 @@ int main(int argc, char *argv[])
     std::string text = utils::parseText(input_file);
 
     {
+
         std::map<std::string, std::string> codingTable;
 
         // Build a huffman tree according to different compression encoding methods
@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 
         // Compression encoding by SingleChar
         utils::output(utils::getFileName(input_file, ".sin.huffidx"), utils::codingTable2String(huffmanTree_single->getCodingTable()));
+        
         utils::loadCodingTable(utils::getFileName(input_file, ".sin.huffidx"), codingTable);
         utils::output(utils::getFileName(input_file, ".sin.huffzip"), utils::compress(codingTable, text));
     }
