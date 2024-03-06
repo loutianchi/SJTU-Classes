@@ -31,7 +31,7 @@ namespace utils
             content += c;
         }
         in.close();
-
+        std::cout << "input length: " << content.length() * 8 << std::endl;
         return content;
     }
 
@@ -130,6 +130,7 @@ namespace utils
            result += c;
         }
         
+        std::cout<< "tot length: " << len << std::endl;
         // 生成总字符数的小端表示，并加到结果的前面
         std::string lengthLittleEndian = "";
         for (int i = 1; i <= 8; i++) {

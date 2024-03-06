@@ -2,14 +2,17 @@
 
 #include <queue>
 #include <iostream>
+#include <cmath>
 
-const int MULTI_CHAR_NUMBER = 3;
+// const int MULTI_CHAR_NUMBER = 50;
 
 hfTree::hfTree(const std::string &text, const Option op)
 {
     std::map <std::string, int> mapBuilding;
     std::priority_queue<hfNode *, std::vector<hfNode *>, multiSelect> q0;
     hfNode *newNode, *chd1, *chd2;
+
+    int MULTI_CHAR_NUMBER = log(text.length()) / log(2) * 2;
 
     mapBuilding.clear();   
     // MultiChar的情况
@@ -22,7 +25,7 @@ hfTree::hfTree(const std::string &text, const Option op)
              it != mapBuilding.end(); ++it) {
 			newNode = new hfNode(it->second, it->first);
              q0.push(newNode);
-			if (q0.size() > 3) {
+			if (q0.size() > MULTI_CHAR_NUMBER) {
 				newNode = q0.top();
 				q0.pop();
 				delete newNode;
