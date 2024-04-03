@@ -61,6 +61,20 @@ void RedBlackTree::fixViolation(Node* pt) {
                 pt = grand_parent_pt;
             } else {// Uncle is black
                 // LL-Case and LR-Case, write your code here
+                // LL-Case
+                if (pt == parent_pt->left) {
+                    rotateRight(grand_parent_pt);
+                    grand_parent_pt->color = RED;
+                    parent_pt->color = BLACK;
+                    pt = parent_pt;
+                }
+                // LR-case
+                else {
+                    rotateLeft(parent_pt);
+                    rotateRight(grand_parent_pt);
+                    pt->color = BLACK;
+                    grand_parent_pt->color = RED;
+                }
             }
         } else {
             Node* uncle_pt = grand_parent_pt->left;
@@ -71,7 +85,20 @@ void RedBlackTree::fixViolation(Node* pt) {
                 uncle_pt->color = BLACK;
                 pt = grand_parent_pt;
             } else {
-                // RR-Case and RL-Case, write your code here
+                // RR-Case and RL-Case, write your code herehere
+                // RL-case
+                if (pt == parent_pt->left) {
+                    rotateRight(parent_pt);
+                    rotateLeft(grand_parent_pt);
+                    pt->color = BLACK;
+                    grand_parent_pt->color = RED;
+                }
+                else {
+                    rotateLeft(grand_parent_pt);
+                    grand_parent_pt->color = RED;
+                    parent_pt->color = BLACK;
+                    pt = parent_pt;
+                }
             }
         }
     }
