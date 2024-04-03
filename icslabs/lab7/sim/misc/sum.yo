@@ -1,0 +1,42 @@
+                            | # name: 楼天驰
+                            | # ID: 522031910290
+                            | 
+0x000:                      | .pos 0
+0x000: 30f40002000000000000 | Init: irmovq Stack, %rsp
+0x00a: 30f73000000000000000 | irmovq ele1, %rdi
+0x014: a08f                 | pushq %r8
+0x016: a09f                 | pushq %r9
+0x018: a07f                 | pushq %rdi
+0x01a: 806000000000000000   | call Sum_list
+0x023: b07f                 | popq %rdi
+0x025: b09f                 | popq %r9
+0x027: b08f                 | popq %r8
+0x029: 00                   | halt
+                            | 
+0x030:                      | .align 8
+0x030:                      | ele1:
+0x030: 0a00000000000000     | .quad 0x00a
+0x038: 4000000000000000     | .quad ele2
+0x040:                      | ele2:
+0x040: b000000000000000     | .quad 0x0b0
+0x048: 5000000000000000     | .quad ele3
+0x050:                      | ele3:
+0x050: 000c000000000000     | .quad 0xc00
+0x058: 0000000000000000     | .quad 0
+                            | 
+0x060:                      | .align 8
+0x060:                      | Sum_list:
+0x060: 30f00000000000000000 | irmovq $0, %rax
+0x06a: 30f80000000000000000 | irmovq $0, %r8
+0x074:                      | Loop:
+0x074: 6187                 | subq %r8, %rdi
+0x076: 739e00000000000000   | je Out
+0x07f: 50970000000000000000 | mrmovq (%rdi), %r9
+0x089: 6090                 | addq %r9, %rax
+0x08b: 50770800000000000000 | mrmovq 8(%rdi), %rdi
+0x095: 707400000000000000   | jmp Loop
+0x09e:                      | Out: 
+0x09e: 90                   | ret
+                            | 
+0x200:                      | .pos 0x200
+0x200:                      | Stack:

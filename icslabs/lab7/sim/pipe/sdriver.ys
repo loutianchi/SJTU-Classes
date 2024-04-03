@@ -1,0 +1,249 @@
+#######################################################################
+# Test for copying block of size 4;
+#######################################################################
+	.pos 0
+main:	irmovq Stack, %rsp  	# Set up stack pointer
+
+	# Set up arguments for copy function and then invoke it
+	irmovq $4, %rdx		# src and dst have 4 elements
+	irmovq dest, %rsi	# dst array
+	irmovq src, %rdi	# src array
+	call ncopy		 
+	halt			# should halt with num nonzeros in %rax
+StartFun:
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# Include your name and ID here.
+#
+# name : 楼天驰
+# ID : 522031910290
+#
+# Describe how and why you modified the baseline code.
+#
+# Try0:
+# In Loop and Npos, modified "irmovq, addq/subq" to "iaddq" because iaddq is more efficient
+# In Loop, move "src++" after read from src, avoid load/use hazard.
+# Loop unrolling, use most of the registers(unrolling 8). 
+# The remaining data are not unrolled.
+#
+# Try1:
+# use handle4, handle2, handle1 to manage the remaining data.
+# A little faster
+#
+# Try2:
+# use jumptable to handle the left, since ret brings in 3 bubbles, the CPE is almost the same.
+# And then restructured the instructions to use less jxx, a little faster.
+# 
+# Try3:
+# Modifie pipe-full.hcl, when meet pushq+ret, no bubbles.
+# Modifie pipe-full.hcl, when meet mrmovq+rmmovq, no bubbles.
+# Remove the first two instructions, since it has no effect.
+# 
+# Try4:
+# Changed the order of some instructions, reduce a bubble
+# Meet the requirement (CPE=7.45)
+#
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+	#xorq %rax, %rax
+	iaddq $-8, %rdx
+	jge Loop
+	jmp LoopEd
+
+Loop:	
+	mrmovq (%rdi), %r10	# read val from src...
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+	mrmovq 8(%rdi), %r11
+	rmmovq %r11, 8(%rsi)
+	mrmovq 16(%rdi), %r12
+	rmmovq %r12, 16(%rsi)
+	mrmovq 24(%rdi), %r13
+	rmmovq %r13, 24(%rsi)
+	mrmovq 32(%rdi), %r14
+	rmmovq %r14, 32(%rsi)
+	mrmovq 40(%rdi), %r8
+	rmmovq %r8, 40(%rsi)
+	mrmovq 48(%rdi), %r9
+	rmmovq %r9, 48(%rsi)
+	mrmovq 56(%rdi), %rbp
+	rmmovq %rbp, 56(%rsi)
+	andq %r10, %r10
+	jle Npos1		
+	iaddq $1, %rax		
+Npos1:	andq %r11, %r11
+	jle Npos2		
+	iaddq $1, %rax		
+Npos2:	andq %r12, %r12
+	jle Npos3		
+	iaddq $1, %rax		
+Npos3:	andq %r13, %r13
+	jle Npos4		
+	iaddq $1, %rax	
+Npos4:	andq %r14, %r14
+	jle Npos5		
+	iaddq $1, %rax	
+Npos5:	andq %r8, %r8
+	jle Npos6		
+	iaddq $1, %rax	
+Npos6:	andq %r9, %r9
+	jle Npos7	
+	iaddq $1, %rax
+Npos7:	andq %rbp, %rbp		
+	jle Npos8		
+	iaddq $1, %rax		
+Npos8:	
+	iaddq $64, %rdi		# src+=8
+	iaddq $64, %rsi		# dst+=8
+	iaddq $-8, %rdx		# len-=8 (unrolling 8)
+	jge Loop			# if so, goto Loop:
+	jmp LoopEd
+
+LoopEd:					# if len < 8, do immediately
+	addq %rdx, %rdx
+	addq %rdx, %rdx
+	addq %rdx, %rdx
+	mrmovq JumpTable(%rdx), %rdx
+	mrmovq (%rdi), %r9
+	pushq %rdx
+	ret
+	
+Do7:
+	mrmovq 48(%rdi), %r10
+	rmmovq %r10, 48(%rsi)
+	mrmovq 40(%rdi), %r11
+	rmmovq %r11, 40(%rsi)
+	mrmovq 32(%rdi), %r12
+	rmmovq %r12, 32(%rsi)
+	mrmovq 24(%rdi), %r13
+	rmmovq %r13, 24(%rsi)
+	andq %r10, %r10
+	jle Nx
+	iaddq $1, %rax
+Nx: andq %r11, %r11
+	jle Nx1
+	iaddq $1, %rax
+Nx1:andq %r12, %r12
+	jle Nx2
+	iaddq $1, %rax
+Nx2:andq %r13, %r13
+	jle Nx3
+	iaddq $1, %rax
+Nx3:
+	jmp Do3
+Do6:
+	mrmovq 40(%rdi), %r11
+	rmmovq %r11, 40(%rsi)
+	mrmovq 32(%rdi), %r12
+	rmmovq %r12, 32(%rsi)
+	mrmovq 24(%rdi), %r13
+	rmmovq %r13, 24(%rsi)
+	jmp Nx
+Do5:
+	mrmovq 32(%rdi), %r12
+	rmmovq %r12, 32(%rsi)
+	mrmovq 24(%rdi), %r13
+	rmmovq %r13, 24(%rsi)
+	jmp Nx1
+Do4:
+	mrmovq 24(%rdi), %r12
+	rmmovq %r12, 24(%rsi)
+	andq %r12, %r12
+	jle Do3
+	iaddq $1, %rax
+Do3:
+	mrmovq 16(%rdi), %r11
+	rmmovq %r11, 16(%rsi)
+	andq %r11, %r11
+	jle Do2
+	iaddq $1, %rax
+Do2:
+	mrmovq 8(%rdi), %r10
+	rmmovq %r10, 8(%rsi)
+	andq %r10, %r10
+	jle Do1
+	iaddq $1, %rax
+Do1:
+	rmmovq %r9, (%rsi)
+	andq %r9, %r9
+	jle Done
+	iaddq $1, %rax
+	jmp Done
+
+	
+	.align 8
+	.quad Done
+	.quad Do1
+	.quad Do2
+	.quad Do3
+	.quad Do4
+	.quad Do5
+	.quad Do6
+	.quad Do7
+JumpTable:
+	.quad Done
+
+
+
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+	ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */
+EndFun:
+
+###############################
+# Source and destination blocks 
+###############################
+	.align 8
+src:
+	.quad -1
+	.quad -2
+	.quad 3
+	.quad 4
+	.quad 0xbcdefa # This shouldn't get moved
+
+	.align 16
+Predest:
+	.quad 0xbcdefa
+dest:
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+	.quad 0xcdefab
+Postdest:
+	.quad 0xdefabc
+
+.align 8
+# Run time stack
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+	.quad 0
+
+Stack:

@@ -1,0 +1,42 @@
+# name: 楼天驰
+# ID: 522031910290
+
+.pos 0
+Init: irmovq Stack, %rsp
+irmovq ele1, %rdi
+pushq %r8
+pushq %r9
+pushq %rdi
+call Sum_list
+popq %rdi
+popq %r9
+popq %r8
+halt
+
+.align 8
+ele1:
+.quad 0x00a
+.quad ele2
+ele2:
+.quad 0x0b0
+.quad ele3
+ele3:
+.quad 0xc00
+.quad 0
+
+.align 8
+Sum_list:
+irmovq $0, %rax
+irmovq $0, %r8
+Loop:
+subq %r8, %rdi
+je Out
+mrmovq (%rdi), %r9
+addq %r9, %rax
+mrmovq 8(%rdi), %rdi
+jmp Loop
+Out: 
+ret
+
+.pos 0x200
+Stack:

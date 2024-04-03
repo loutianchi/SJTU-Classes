@@ -1,0 +1,60 @@
+# name: 楼天驰
+# ID: 522031910290
+
+.pos 0
+Init: irmovq Stack, %rsp
+irmovq src, %rdi
+irmovq dest, %rsi
+irmovq $3, %rdx
+pushq %rdi
+pushq %rsi
+pushq %rdx
+pushq %r8
+pushq %r9
+pushq %r10
+pushq %r11
+call Copy_block
+popq %r11
+popq %r10
+popq %r9
+popq %r8
+popq %rdx
+popq %rsi
+popq %rdi
+halt
+
+
+.align 8
+# Source block
+src:
+.quad 0x00a
+.quad 0x0b0
+.quad 0xc00
+# Destination block
+dest:
+.quad 0x111
+.quad 0x222
+.quad 0x333
+
+
+.align 8
+Copy_block:
+irmovq $0, %rax
+irmovq $0, %r8
+irmovq $8, %r10
+irmovq $1, %r11
+Loop:
+subq %r8, %rdx
+jle Quit
+mrmovq (%rdi), %r9
+addq %r10, %rdi
+rmmovq %r9, (%rsi)
+addq %r10, %rsi
+xorq %r9, %rax
+subq %r11, %rdx
+jmp Loop
+Quit:
+ret
+
+.pos 0x200
+Stack:
