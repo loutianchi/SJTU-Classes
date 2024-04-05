@@ -22,6 +22,7 @@ private:
     void inorderUtil(Node* root);
 
 public:
+    int tot_unbalance, tot_rotate, tot_color;
     RedBlackTree();
     void insert(const int data);
     void inorder();

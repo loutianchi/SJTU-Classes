@@ -4,10 +4,14 @@
 // The color of new node is always red
 Node::Node(int data) : data(data), color(RED), parent(nullptr), left(nullptr), right(nullptr) {} 
 
-RedBlackTree::RedBlackTree() : root(nullptr) {}
+RedBlackTree::RedBlackTree() : root(nullptr) {
+    tot_unbalance = tot_rotate = tot_color = 0;
+
+}
 
 void RedBlackTree::rotateLeft(Node* x) {
     // Left rotation logic
+    tot_rotate++;
     Node* y = x->right;
     x->right = y->left;
     if (y->left != nullptr)
@@ -25,6 +29,7 @@ void RedBlackTree::rotateLeft(Node* x) {
 
 void RedBlackTree::rotateRight(Node* x) {
     // Right rotation logic
+    tot_rotate++;
     Node* y = x->left;
     x->left = y->right;
     if (y->right != nullptr)
@@ -47,6 +52,7 @@ void RedBlackTree::fixViolation(Node* pt) {
 
     
     while ((pt != root) && (pt->color == RED) && (pt->parent->color == RED)) {
+        tot_unbalance++;
         parent_pt = pt->parent;
         grand_parent_pt = pt->parent->parent;
 
@@ -58,6 +64,7 @@ void RedBlackTree::fixViolation(Node* pt) {
                 grand_parent_pt->color = RED;
                 parent_pt->color = BLACK;
                 uncle_pt->color = BLACK;
+                tot_color+=3;
                 pt = grand_parent_pt;
             } else {// Uncle is black
                 // LL-Case and LR-Case, write your code here
@@ -66,6 +73,7 @@ void RedBlackTree::fixViolation(Node* pt) {
                     rotateRight(grand_parent_pt);
                     grand_parent_pt->color = RED;
                     parent_pt->color = BLACK;
+                    tot_color+=2;
                     pt = parent_pt;
                 }
                 // LR-case
@@ -74,6 +82,7 @@ void RedBlackTree::fixViolation(Node* pt) {
                     rotateRight(grand_parent_pt);
                     pt->color = BLACK;
                     grand_parent_pt->color = RED;
+                    tot_color+=2;
                 }
             }
         } else {
@@ -83,6 +92,7 @@ void RedBlackTree::fixViolation(Node* pt) {
                 grand_parent_pt->color = RED;
                 parent_pt->color = BLACK;
                 uncle_pt->color = BLACK;
+                tot_color+=3;
                 pt = grand_parent_pt;
             } else {
                 // RR-Case and RL-Case, write your code herehere
@@ -92,11 +102,13 @@ void RedBlackTree::fixViolation(Node* pt) {
                     rotateLeft(grand_parent_pt);
                     pt->color = BLACK;
                     grand_parent_pt->color = RED;
+                    tot_color+=2;
                 }
                 else {
                     rotateLeft(grand_parent_pt);
                     grand_parent_pt->color = RED;
                     parent_pt->color = BLACK;
+                    tot_color+=2;
                     pt = parent_pt;
                 }
             }
@@ -127,7 +139,7 @@ void RedBlackTree::inorderUtil(Node* root) {
     if (root == nullptr)
         return;
     inorderUtil(root->left);
-    std::cout << root->data << " ";
+    std::cout << root->data << " " << (root->color==RED?"RED":"BLACK") << std::endl;
     inorderUtil(root->right);
 }
 
