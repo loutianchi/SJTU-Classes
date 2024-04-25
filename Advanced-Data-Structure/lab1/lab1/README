@@ -1,0 +1,4 @@
+通过 make 进行基础的编译
+使用 make grade 进行正确性测试，即运行 grade.sh
+使用 make clean 将测试中产生的中间文件删除
+使用 make test 生成 ycsb 可执行文件，然后用 ./ycsb 对比测试三种树在三种工作负载下的表现，打印到屏幕。

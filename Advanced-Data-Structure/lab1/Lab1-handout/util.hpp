@@ -4,7 +4,17 @@
 #include <cassert>
 #include <random>
 
-int zipf(double alpha = 0.5, int n = INT_MAX)
+#define CANDIDATE_CNT 100000
+#define ZIPF_ALPHA 0.5
+
+int zipf(double alpha, int n);
+
+// This is the help function to generate a random number following zipf distribution
+int zipf() {
+  return zipf(ZIPF_ALPHA, CANDIDATE_CNT) * (INT_MAX / CANDIDATE_CNT);
+}
+
+int zipf(double alpha, int n)
 {
   static int first = true;      // Static first time flag
   static double c = 0;          // Normalization constant
@@ -29,7 +39,7 @@ int zipf(double alpha = 0.5, int n = INT_MAX)
     for (i=1; i<=n; i++) {
       sum_probs[i] = sum_probs[i-1] + c / pow((double) i, alpha);
     }
-    first = true;
+    first = false;
   }
 
   // Pull a uniform random number (0 < z < 1)
