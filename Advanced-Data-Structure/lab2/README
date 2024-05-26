@@ -1,0 +1,7 @@
+在这个lab之中，使用命令 make 进行编译，使用 make grade 进行正确性测试，使用 make test 进行性能测试。
+如果需要改变各参数以观察不同参数情况下的程序表现性能，可以在 util 文件夹下的 parameter 中修改各参数，包括：
+1. M 初次建立的边数
+2. M_max 最大建立边数
+3. ef_construction, ef_search 建立图与查找时要找的最大结点数
+4. threadNum 多线程查询时的线程数
+实验结果会打印在屏幕上。
