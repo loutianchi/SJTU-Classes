@@ -123,6 +123,7 @@ public:
 			if (i % GC_TRIGGER == 0) [[unlikely]]
 			{
 				check_gc(16 * MB);
+		//		puts("gc");
 			}
 			switch (i & 3)
 			{

@@ -98,7 +98,7 @@ private:
 		{
 			store.put(i, std::string(i + 1, 's'));
 		}
-
+		
 		for (i = 0; i < max; ++i)
 		{
 			EXPECT(std::string(i + 1, 's'), store.get(i));
@@ -119,6 +119,7 @@ private:
 
 			if (i % gc_trigger == 0) [[unlikely]]
 			{
+//				puts("gc");
 				check_gc(16 * MB);
 			}
 		}
@@ -218,7 +219,7 @@ public:
 	
 	void my_test_insert() {
 		store.reset();
-		// for (int i = 0; i < 10000; i++) {
+		// for (int i = 0; i < 1000; i++) {
 		// 	store.put(i * 100 + 10, "ABCDEFG");
 		// 	store.put(i * 100 + 25, "ZYX");
 		// }
@@ -256,8 +257,8 @@ int main(int argc, char *argv[])
 
 	CorrectnessTest test("./data", "./data/vlog", verbose);
 
-	test.my_test_insert();
-	//test.start_test();
+	// test.my_test_insert();
+	test.start_test();
 
 	return 0;
 }

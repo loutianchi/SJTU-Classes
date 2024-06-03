@@ -5,6 +5,8 @@
 #include "vlog.h"
 #include "sstable.h"
 
+#include <map>
+
 class KVStore : public KVStoreAPI
 {
 	// You can add your implementation here
@@ -14,10 +16,23 @@ private:
 	const double possiblity = 0.36787944;
 	unsigned long long SScnt, ssTimeStamp;
 	std::list< std::pair<int, std::string> > sstFiles;
+	std::map< std::string, SSTable::SSTable_type* > sstCache;
 
 	const std::string dirP, vlogP;
 
+	SSTable::SSTable_type* cacheSST(const std::pair<int, std::string> &sstFile);
+	int levelCnt[30], totLevel;
+	struct NewKV
+	{
+		uint64_t key;
+		unsigned long long offset, time;
+		unsigned int len;
+	};
+	
 	void SSTableGenerator();
+	void checkLevel();
+	void getCandidates(int level, std::vector<SSTable::SSTable_type*> &candidates);
+	void compaction(int level);
 public:
 	KVStore(const std::string &dir, const std::string &vlog);
 

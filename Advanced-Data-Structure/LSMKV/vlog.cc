@@ -4,7 +4,6 @@
 
 #include <cstdio>
 #include <sys/mman.h>  
-#include <fcntl.h>
 
 #include <iostream>
 
@@ -42,7 +41,7 @@ namespace VLog
             ptr = (char*) mmap(0, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, stOff);
             if (ptr == MAP_FAILED) {
                 close(fd);
-                perror("mmap");
+                perror("mmap1");
                 return;
             }
             while (tail < head) {
@@ -51,14 +50,14 @@ namespace VLog
                     tail++;
                     continue;
                 }
-                while (tail + 16 >= stOff + curSize) {
+                while (tail + 16ull >= stOff + curSize) {
                     curSize += PAGE_SIZE;
                     ptr = (char*) mremap(ptr, curSize - PAGE_SIZE, curSize, PROT_READ, MAP_SHARED);
                 }
-                memcpy(&check, (ptr + 1 + tail - stOff), sizeof(check));  
-                memcpy(&key, (ptr + 3 + tail - stOff), sizeof(key));  
-                memcpy(&len, (ptr + 11 + tail - stOff), sizeof(len));
-                while (tail + len + 16 >= stOff + curSize) {
+                memcpy(&check, (ptr + 1ull + tail - stOff), sizeof(check));  
+                memcpy(&key, (ptr + 3ull + tail - stOff), sizeof(key));  
+                memcpy(&len, (ptr + 11ull + tail - stOff), sizeof(len));
+                while (tail + len + 16ull >= stOff + curSize) {
                     curSize += PAGE_SIZE;
                     ptr = (char*) mremap(ptr, curSize - PAGE_SIZE, curSize, PROT_READ, MAP_SHARED);
                     if (ptr == MAP_FAILED) {
@@ -67,7 +66,7 @@ namespace VLog
                     }
                 }
                 std::vector<unsigned char> data(len + 12);
-                std::copy(ptr + 3 + tail - stOff, ptr + len + 15 + tail - stOff, data.begin());
+                std::copy(ptr + 3 + tail - stOff, ptr + len + 15ull + tail - stOff, data.begin());
                 if (utils::crc16(data) == check) {
                     break;
                 }
@@ -79,7 +78,7 @@ namespace VLog
                     ptr = (char*) mmap(0, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, stOff);
                     if (ptr == MAP_FAILED) {
                         close(fd);
-                        perror("mmap");
+                        perror("mmap2");
                         return;
                     }
                 }
@@ -99,9 +98,9 @@ namespace VLog
         std::vector<unsigned char> data(len + 15);
 
         memcpy(data.data(), &magic, sizeof(magic));  
-        memcpy(data.data() + 3, &key, sizeof(key));  
-        memcpy(data.data() + 11, &len, sizeof(len));
-        memcpy(data.data() + 15, s.c_str(), len);
+        memcpy(data.data() + 3ull, &key, sizeof(key));  
+        memcpy(data.data() + 11ull, &len, sizeof(len));
+        memcpy(data.data() + 15ull, s.c_str(), len);
 
       //  std::cout << key << " " << s << std::endl;
       //  puts("YES1");
@@ -129,61 +128,66 @@ namespace VLog
         unsigned int len;
         char *ptr;
         
-        //printf("ht: %lld %lld\n", head, tail);
         unsigned long long tailIn = tail;
-        off_t stOff = (tail >> 12) << 12;
-        size_t curSize = PAGE_SIZE;
-        ptr = (char*) mmap(0, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, stOff);
+        off_t stOff = (tail / chunk_size) * chunk_size;
+        stOff = (stOff >> 12) << 12;
+        size_t curSize = chunk_size;
+        ptr = (char*) mmap(0, chunk_size, PROT_READ, MAP_SHARED, fd, stOff);
         if (ptr == MAP_FAILED) {
             close(fd);
-            perror("mmap");
+            perror("mmap3");
             return;
         }
+        
+//        printf("ht: %lld %lld %lld\n", head, tail, last);
         while (tail < last && tail < head) {
             c = *(unsigned char*)(ptr + tail - stOff);
             if (c != magic) {
                 tail++;
                 continue;
             }
-            while (tail + 16 >= stOff + curSize) {
+            // printf("%lld %ld\n", tail, curSize);
+            while (tail + 16ull >= stOff + curSize) {
                 curSize += PAGE_SIZE;
                 ptr = (char*) mremap(ptr, curSize - PAGE_SIZE, curSize, PROT_READ, MAP_SHARED);
             }
-            memcpy(&check, (ptr + 1 + tail- stOff), sizeof(check));  
-            memcpy(&key, (ptr + 3 + tail - stOff), sizeof(key));  
-            memcpy(&len, (ptr + 11 + tail - stOff), sizeof(len));
-            while (tail + len + 16 >= stOff + curSize) {
+            memcpy(&check, (ptr + 1ull + tail- stOff), sizeof(check));  
+            memcpy(&key, (ptr + 3ull + tail - stOff), sizeof(key));  
+            memcpy(&len, (ptr + 11ull + tail - stOff), sizeof(len));
+            while (tail + len + 16ull >= stOff + curSize) {
                 curSize += PAGE_SIZE;
                 ptr = (char*) mremap(ptr, curSize - PAGE_SIZE, curSize, PROT_READ, MAP_SHARED);
-            }
-            if (ptr == MAP_FAILED) {
-                close(fd);
-                perror("mmap");
-                return;
+                if (ptr == MAP_FAILED) {
+                    close(fd);
+                    perror("mmap4");
+                    return;
+                }
             }
             std::vector<unsigned char> data(len + 12);
-            std::copy(ptr + 3 + tail - stOff, ptr + len + 15 + tail - stOff, data.begin());
+            std::copy(ptr + 3 + tail - stOff, ptr + len + 15ull + tail - stOff, data.begin());
             value = std::string(ptr + 15 + tail - stOff, len);
             
             if (utils::crc16(data) == check) {
                 // find in lsm, check the offset, if it is same, insert again
                 if (LSM_TREE->checkOffset(key, tail)) {
+                    // puts("inserting...");
                     LSM_TREE->put(key, value);
                 }
             }
-            tail += len + 15;
-            if (tail >= stOff + curSize) {
+            tail += len + 15ull;
+            while (tail >= stOff + curSize) {
                 munmap(ptr, curSize);
                 stOff += curSize;
                 curSize = PAGE_SIZE;
                 ptr = (char*) mmap(0, PAGE_SIZE, PROT_READ, MAP_SHARED, fd, stOff);
                 if (ptr == MAP_FAILED) {
                     close(fd);
-                    perror("mmap");
+                    perror("mmap5");
                     return;
                 }
             }
         }
+        // puts("out");
         munmap(ptr, curSize);
         if (tail < last)
         {            
@@ -204,7 +208,8 @@ namespace VLog
             }
             free(buffer);
             head = tail = last;
-        };
+        }
+     //   puts("YES");
         utils::de_alloc_file(vlog, tailIn, tail - tailIn);;
         LSM_TREE->save();
     }
@@ -224,17 +229,17 @@ namespace VLog
             curSize += PAGE_SIZE;
             ptr = (char*) mremap(ptr, curSize - PAGE_SIZE, curSize, PROT_READ, MAP_SHARED);
         }
-        memcpy(&len, (ptr + 11 + offset - stOff), sizeof(len));
-        while (offset + len + 15 >= stOff + curSize) {
+        memcpy(&len, (ptr + 11ull + offset - stOff), sizeof(len));
+        while (offset + len + 15ull >= stOff + curSize) {
             curSize += PAGE_SIZE;
             ptr = (char*) mremap(ptr, curSize - PAGE_SIZE, curSize, PROT_READ, MAP_SHARED);
+            if (ptr == MAP_FAILED) {
+                close(fd);
+                perror("mmap6");
+                return "";
+            }
         }
-        if (ptr == MAP_FAILED) {
-            close(fd);
-            perror("mmap");
-            return "";
-        }
-        value = std::string(ptr + 15 + offset - stOff, len);
+        value = std::string(ptr + 15ull + offset - stOff, len);
         munmap(ptr, curSize);
         return value;
     }
