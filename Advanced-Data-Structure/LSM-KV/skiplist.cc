@@ -112,7 +112,7 @@ void skiplist_type::scan(key_type st, key_type ed, std::list<std::pair<key_type,
     for (int i = max_level; i >= 1; i--) 
         while (now->forward[i] != last && now->forward[i]->key < st)
             now = now->forward[i];
-    while (now->forward[1]->key <= ed) {
+        while (now->forward[1] != last && now->forward[1]->key <= ed) {
         now = now->forward[1];
         res.push_back(std::make_pair(now->key, now->value));
     }
